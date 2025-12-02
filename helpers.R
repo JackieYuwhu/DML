@@ -60,7 +60,7 @@ ml_fit <- function(x, y, w, method = "ranger") {
   if (method == "ranger") {
     # ranger 拟合 (随机森林)
     df <- data.frame(y = y, x)
-    fit <- ranger::ranger(y ~ ., data = df, num.trees = 500)
+    fit <- ranger::ranger(y ~ ., data = df, num.trees = 500,w = weight)
     return(list(predict = function(newx) predict(fit, data = newx)$predictions))
   } else if (method == "lasso") {
     # 加权 LASSO 拟合 (glmnet)
@@ -74,9 +74,8 @@ ml_fit <- function(x, y, w, method = "ranger") {
     return(list(predict = function(newx) predict(fit, as.matrix(newx))))
   } else if (method == "nnet") {
     # 神经网络拟合 (nnet)
-    # 注意: nnet 不直接支持权重，我们暂时忽略 w
     df <- data.frame(y = y, x)
-    fit <- nnet::nnet(y ~ ., data = df, size = 5, linout = TRUE, trace = FALSE)
+    fit <- nnet::nnet(y ~ ., data = df, size = 5, linout = TRUE, trace = FALSE,w = weight)
     return(list(predict = function(newx) as.numeric(predict(fit, newx))))
   } else {
     stop(paste("不支持的机器学习学习器:", method))
@@ -352,4 +351,5 @@ create_results_datatable <- function(res_list) {
     formatStyle(columns = "P-Value",
                 backgroundColor = styleInterval(c(0.01, 0.05, 0.10), c("red", "gold", "lightcyan", "white")),
                 color = styleInterval(c(0.05), c('darkred', 'black')))
+
 }
